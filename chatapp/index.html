@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Firebase:v9:Chatアプリ</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+<link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+<!-- コンテンツ表示画面 -->
+
+<div>
+    <h1 id="title">ChatApp</h1>
+    <div class="messagebox">
+        <div id="output"></div>
+    </div>
+    <!-- <div> 名前：<input type="text" id="uname"> </div> -->
+    <div class="inputarea">
+        <div> 名前：
+            <select name="uname" id="uname">
+                <option value="0">Tadashi</option>
+                <option value="1">Jane</option>
+                <option value="2">Ray</option>
+              </select>
+        </div>
+        <div class="form">
+            <textarea id="text"></textarea> <!-- cols="30" rows="5" をカット-->
+            <button id="send" class="btn btn-primary">送信
+                <i class="bi bi-send-check"></i>
+            </button>
+            <!-- <button id="delete" class="del">削除</button> -->
+        </div>
+    </div>
+</div>
+<!--/ コンテンツ表示画面 -->
+
+<!-- JQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- JQuery -->
+
+
+<!--** 以下Firebase **-->
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.8.1/firebase-app.js";
+    import { getDatabase, ref, push, set, onChildAdded, remove, update, child, onChildRemoved, onChildChanged } 
+    from "https://www.gstatic.com/firebasejs/9.8.1/firebase-database.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDF1BMt-r-WK_TDbpw34rKne_RE28_TEzw",
+      authDomain: "gsdemo-1d99f.firebaseapp.com",
+      projectId: "gsdemo-1d99f",
+      storageBucket: "gsdemo-1d99f.appspot.com",
+      messagingSenderId: "410105064695",
+      appId: "1:410105064695:web:13f83cd3fc4a3563bcb7f2"
+    };
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const dbRef = ref(db,"chat");
+    console.log(dbRef);
+
+    // アイコンイメージ
+    const iconimages = [
+        '<img src="./imgs/buke.png" alt="">',
+        '<img src="./imgs/caram.png" alt="">',
+        '<img src="./imgs/tuku.jpg" alt="">'
+    ];
+
+    // 送信イベント
+    $("#send").on("click", function(){
+        const ymd = new Date();
+        const dayname = ['日','月','火','水','木','金','土'];
+// console.log(year + '年' + month + '月' + day + '日' + '[' + dayname[dayofweek] + ']' + hour + '時' + minute + '分' + second + '.' + millisecond + '秒');
+
+        const msg = {
+        uname : $("#uname").val(),
+        text : $("#text").val(),
+        year : ymd.getFullYear(), 
+        month :("0"+ (ymd.getMonth()+1)).slice(-2), 
+        day : ("0"+ ymd.getDate()).slice(-2), 
+        dayofweek : ymd.getDay(), 
+        hour : ("0"+ ymd.getHours()).slice(-2), 
+        minute : ("0"+ ymd.getMinutes()).slice(-2), 
+        second : ymd.getSeconds(), 
+        millisecond : ymd.getMilliseconds(),
+        daynamejp : dayname[ymd.getDay()]
+        };
+        console.log(msg);
+        const newPostRef = push(dbRef); //ユニークKEYを生成
+        console.log(newPostRef);
+        set(newPostRef, msg);           //"chat"にユニークKEYをつけてオブジェクトデータを登録
+        $("#text").val("");
+    });
+
+    // 受信イベント
+    onChildAdded(dbRef, function(data){
+        const msg = data.val();
+        const key = data.key;
+        let h = '<div class="newmessage ';
+            h += key;
+            h += '"><p>';
+            h += msg.year + '年';
+            h += msg.month + '月';
+            h += msg.day + '日';
+            h += '(' + msg.daynamejp + ')';
+            h += msg.hour + '時' + msg.minute + '分';
+            h += '<button class="'
+            h += 'del btn btn-outline-secondary';
+            h += '">';
+            h += '削除';
+            h += '</button>';
+            h += '<button class="'
+            h += 'edit btn btn-outline-primary"';
+            h += '">';
+            h += '編集';
+            h += '</button>';
+            h += '<span class="key">';
+            h += key;
+            h += '</span>';
+            h += '<br>';
+            h += iconimages[msg.uname];
+            h += '<br>';
+            h += '<div class="messagetext">';
+            h += msg.text;
+            h += '</div>';
+            h += '</p></div>';
+        $("#output").append(h);
+        $("#output").scrollTop = $("#output").get(0).scrollHeight;
+        document.querySelector("#output").scrollTop = document.querySelector("#output").scrollHeight;
+        // なんでJqueryに置き換えただけなのに動かない？？1=2,3=4なら、単純に差し替えたらいけそうじゃない？
+        // 1.console.log(document.querySelector("#output").scrollTop);
+        // 2.console.log($("#output").scrollTop());
+        // 3.console.log(document.querySelector("#output").scrollHeight);
+        // 4.console.log($("#output").get(0).scrollHeight);
+        // $("#output").scrollTop = $("#output").get(0).scrollHeight;
+    });
+
+
+    // 削除(上)イベント（元のイベント）
+    $(".del").on("click", function() {
+      console.log("osetayo");
+    });
+    // // ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+    // // 削除(メッセージ)イベント
+    // $("#output").on("click", ".del", function () {
+    //     // ここがうまく指定できるようにしたい。
+    //     // const deletemessage = $(this).closest("p").html();
+    //     // console.log(deletemessage);
+    //     // const deletemessagekey2 = $(this).closest("p").children().eq(3).html();
+    //     const deletekey = $(this).siblings(".key").html();
+    //     console.log(deletekey);
+
+    //     // この後にデータを指定して、remove() ※setを真似てみる？
+    //     // remove(ref(db, "chat/"+deletekey));
+
+    //     // もしくはnullをset
+    //     const dbRef = ref(db,"chat/"+deletekey);
+    //     set(dbRef, null);
+        
+    //     // htmlから削除
+    //     $(this).closest(".newmessage").remove();
+    // });
+    // // ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+    
+    // 削除(上)イベント（改良バージョン）
+    $("#output").on("click", ".del", function () {
+        const deletekey = $(this).siblings(".key").html();
+        const dbRef = ref(db,"chat/"+deletekey);
+        set(dbRef, null);
+    });
+    onChildRemoved(dbRef, function(data){
+        const msg = data.val();
+        const key = data.key;
+        $("."+key).remove();
+    });
+
+    
+
+    // 編集イベント
+
+    // 編集(メッセージ)開始イベント
+    $("#output").on("click", ".edit", function () {
+        $(this).text("編集中");
+        $(this).addClass("editing");
+        $(this).removeClass("edit");
+        $(this).closest("p").siblings(".messagetext").attr('contenteditable','true');
+        const editkey = $(this).siblings(".key").html();
+        console.log(editkey);
+        // この後にデータを指定して、update() ※setを真似てみる？
+        // update(ref(db, "chat/"+editkey));
+        // html上で上書き
+        // $(this).closest(".newmessage").html();
+    });
+
+    // 編集(メッセージ)完了イベント
+    $("#output").on("click", ".editing", function () {
+        $(this).text("編集");
+        $(this).addClass("edit");
+        $(this).removeClass("editing");
+        $(this).closest("p").siblings(".messagetext").attr('contenteditable','false');
+        const editkey = $(this).siblings(".key").html();
+        console.log(editkey);
+        const edittext = $(this).closest("p").siblings(".messagetext").html();
+        console.log(edittext);
+        // この後にデータを指定して、update() ※setを真似てみる？
+        const dbRef = ref(db,"chat/"+editkey);
+        update(dbRef, {text:edittext});
+    });
+
+    // 変更受信イベント
+    onChildChanged(dbRef, function(data){
+        const msg = data.val();
+        const key = data.key;
+        console.log(key);
+        $("."+key+" .messagetext").text(msg.text);
+    });
+
+    // インプットイベント
+    $("#text").on("keydown", function(e){
+        console.log(e);
+    });
+
+  </script>
+</body>
+</html>
+<!-- メモ -->

@@ -1,0 +1,71 @@
+/* メッセージボックス外枠のスタイル */
+#output{
+  overflow: auto;
+  width: 80%;
+  height: 60vh;
+  margin: 10px auto;
+}
+.messagebox {
+  position: relative;
+  border: 1px solid #007b43; /*左枠線*/
+  width: 90%;
+  margin: 2em auto;
+  padding: 20px 15px 15px 20px;
+  z-index: 0;
+}
+.messagebox::before,
+.messagebox::after {
+  position: absolute;
+  content: '';
+  width: 100%;
+  height: 100%;
+}
+.messagebox::before {
+  border: 1px solid #3eb370; /*中枠線*/
+  bottom: -4px;
+  right: -4px;
+  z-index: -1;
+}
+.messagebox::after {
+  border: 1px solid #7ebea5; /*右枠線*/
+  bottom: -7px;
+  right: -7px;
+  z-index: -2;
+}
+
+/* メッセージボックスの内側スタイル */
+.key{
+  display: none;
+}
+
+.newmessage {
+  padding: 0.5em 1em;
+  margin: 2em 0;
+  color: #5989cf;
+  background: #c6e4ff;
+  border-bottom: solid 6px #aac5de;
+  border-radius: 9px;
+}
+.newmessage p {
+  margin: 0; 
+  padding: 0;
+}
+
+#output img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+}
+
+.inputarea{
+  width: 90%;
+  margin: 2em auto;
+}
+#text{
+  width: 85%;
+}
+
+.form{
+  display: flex;
+  justify-content: space-between;
+}
